@@ -82,8 +82,9 @@ st.dataframe(df_csv)
 
 # 6. Archivo Excel
 st.subheader("📊 Datos desde Excel")
-df_excel = pd.read_excel("data.xlsx")
+df_excel = pd.read_excel("data.xlsx", engine="openpyxl")
 st.dataframe(df_excel)
+
 
 # 7. Archivo JSON
 st.subheader("📁 Datos de Usuarios desde JSON")

@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 # Configuración de la página
 st.set_page_config(   
@@ -27,3 +28,19 @@ st.markdown("""
 
 st.header("Solución")
 
+st.title("1. Operadores de comparación")
+
+# 1. Ingreso mensual mayor a 5,000,000 COP
+print(df_nuevo[df_nuevo['ingreso_mensual'] > 5000000].head())
+
+# 2. Edad menor a 25 años
+print(df_nuevo[df_nuevo['edad'] < 25].head())
+
+# 3. Ocupación exactamente "Estudiante"
+print(df_nuevo[df_nuevo['ocupacion'] == 'Estudiante'].head())
+
+# 4. No vivan en vivienda "Propia"
+print(df_nuevo[df_nuevo['tipo_vivienda'] != 'Propia'].head())
+
+# 5. Edad mayor o igual a 60 años
+print(df_nuevo[df_nuevo['edad'] >= 60].head())
