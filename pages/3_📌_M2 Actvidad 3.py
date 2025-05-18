@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import random
+from faker import Faker
+import datetime
 
 # Configuración de la página
 st.set_page_config(   
@@ -28,19 +32,57 @@ st.markdown("""
 
 st.header("Solución")
 
-st.title("1. Operadores de comparación")
 
-# 1. Ingreso mensual mayor a 5,000,000 COP
-print(df_nuevo[df_nuevo['ingreso_mensual'] > 5000000].head())
+fake = Faker('es_CO')
+np.random.seed(42)
+random.seed(42)
+fake.seed_instance(42)
 
-# 2. Edad menor a 25 años
-print(df_nuevo[df_nuevo['edad'] < 25].head())
+n = 50
+df = pd.DataFrame({
+    'id': range(1, n+1),
+    'nombre': [fake.name() for _ in range(n)],
+    'edad': np.random.randint(18, 66, n),
+    'ciudad': random.choices(['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena'], k=n),
+    'ingreso_mensual': np.random.randint(1000000, 10000001, n),
+    'ocupacion': random.choices(['Estudiante', 'Ingeniero', 'Comerciante', 'Desempleado', 'Docente'], k=n),
+    'fecha_nacimiento': [fake.date_of_birth(minimum_age=18, maximum_age=65) for _ in range(n)],
+    'internet': random.choices([True, False], weights=[0.7, 0.3], k=n)
+})
+df['fecha_nacimiento'] = pd.to_datetime(df['fecha_nacimiento'])
 
-# 3. Ocupación exactamente "Estudiante"
-print(df_nuevo[df_nuevo['ocupacion'] == 'Estudiante'].head())
+st.sidebar.header("Filtros")
 
-# 4. No vivan en vivienda "Propia"
-print(df_nuevo[df_nuevo['tipo_vivienda'] != 'Propia'].head())
+df_filtrado = df.copy()
 
-# 5. Edad mayor o igual a 60 años
-print(df_nuevo[df_nuevo['edad'] >= 60].head())
+# Filtro por edad
+if st.sidebar.checkbox("Filtrar por edad"):
+    edad_min, edad_max = st.sidebar.slider("Rango de edad", 18, 65, (25, 40))
+    df_filtrado = df_filtrado[df_filtrado['edad'].between(edad_min, edad_max)]
+
+# Filtro por ciudad
+if st.sidebar.checkbox("Filtrar por ciudad"):
+    ciudades = st.sidebar.multiselect("Seleccione ciudad", df['ciudad'].unique())
+    if ciudades:
+        df_filtrado = df_filtrado[df_filtrado['ciudad'].isin(ciudades)]
+
+# Filtro por ocupación
+if st.sidebar.checkbox("Filtrar por ocupación"):
+    ocupaciones = st.sidebar.multiselect("Seleccione ocupación", df['ocupacion'].unique())
+    if ocupaciones:
+        df_filtrado = df_filtrado[df_filtrado['ocupacion'].isin(ocupaciones)]
+
+# Filtro por ingreso
+if st.sidebar.checkbox("Filtrar por ingreso mínimo"):
+    ingreso_min = st.sidebar.slider("Ingreso mínimo (COP)", 1000000, 10000000, 2000000, step=500000)
+    df_filtrado = df_filtrado[df_filtrado['ingreso_mensual'] >= ingreso_min]
+
+# Filtro por acceso a internet
+if st.sidebar.checkbox("Solo con internet"):
+    df_filtrado = df_filtrado[df_filtrado['internet'] == True]
+
+# Mostrar resultados
+st.subheader("🔎 Datos filtrados")
+st.dataframe(df_filtrado)
+
+st.write(f"Registros encontrados: **{df_filtrado.shape[0]}**")
